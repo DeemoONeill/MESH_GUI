@@ -3,3 +3,10 @@ venv/
 
 # VSCode config
 .vscode/
+
+# testing directories
+test_folders/
+
+# caches
+__pycache__
+.pytest_cache
