@@ -2,6 +2,8 @@
 
 A GUI wrapper for the MESH (Messaging in Social and Healthcare) client
 
+![screenshot](images/screenshot.png)
+
 This GUI seeks to solve the following problems.
 
 1. Creation of CTL files
@@ -12,9 +14,9 @@ This GUI seeks to solve the following problems.
 
 Immediate:
 
-- [ ] ctl file generator
-- [ ] file dialog for selecting file to send
-- [ ] input for workflowID, subject, localid, recipient
+- [x] ctl file generator
+- [x] file dialog for selecting file to send
+- [x] input for workflowID, subject, localid, recipient
 
 Future:
 
