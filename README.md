@@ -17,6 +17,7 @@ Immediate:
 - [x] ctl file generator
 - [x] file dialog for selecting file to send
 - [x] input for workflowID, subject, localid, recipient
+- [ ] add persistent configuration to autofill sender and MESH-DATA-HOME
 
 Future:
 
