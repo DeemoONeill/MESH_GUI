@@ -51,29 +51,34 @@ class MeshSender:
         return moved_files
 
 
+def check_inbox():
+    return os.listdir("test_folders/mailbox/in")
+
+
 def event_loop(layout):
     window = sg.Window(title="MESH", layout=layout, resizable=True)
-
-    vals = {}
+    filenames = set()
     while True:
         event, values = window.read()
         window["error_text"].update("")
-        vals.update(values)
         match event:
             case sg.WIN_CLOSED:
                 break
             case "browse":
-                file_names = sg.filedialog.askopenfilenames()
-                window["filenames"].update(file_names)
+                filenames = filenames | set(sg.filedialog.askopenfilenames())
+                window["filenames"].update(filenames)
             case "send":
                 try:
-                    MeshSender(**vals).send_file("test_folders/mailbox/out")
+                    values["filenames"] = filenames
+                    MeshSender(**values).send_file("test_folders/mailbox/out")
                 except:
                     print(window.element_list())
                     window["error_text"].update("Missing fields marked with an *")
+            case "inbox_refresh":
+                inbox = check_inbox()
+                window["table"].update([[file] for file in inbox])
             case _:
                 pass
-        print(event, vals)
     window.close()
 
 
@@ -108,7 +113,8 @@ def main():
     ]
     inbox = [
         [sg.Text("MESH Inbox")],
-        [sg.Table([[]], key="table")],
+        [sg.Table([[]], key="table", auto_size_columns=False)],
+        [sg.Button("inbox_refresh")],
     ]
     layout = [
         [
