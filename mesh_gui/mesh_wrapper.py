@@ -33,14 +33,15 @@ class MeshSender:
         """
 
     def send_file(self, dest_folder):
+        moved_files = []
         for path in self.filenames:
             file = os.path.split(path)[-1]
             data_file = f"{file}.dat"
 
-            filename = shutil.copy2(path, os.path.join(dest_folder, data_file))
+            moved_files.append(shutil.copy2(path, os.path.join(dest_folder, data_file)))
             with open(os.path.join(dest_folder, f"{file}.ctl"), "w") as f:
                 f.write(self.generate_ctl())
-            return filename
+        return moved_files
 
 
 def event_loop(layout):
