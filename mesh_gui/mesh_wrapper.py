@@ -5,7 +5,14 @@ import PySimpleGUI as sg
 
 class MeshSender:
     def __init__(
-        self, workflowID, recipient, sender, filenames, subject=None, localID=None
+        self,
+        workflowID,
+        recipient,
+        sender,
+        filenames,
+        subject=None,
+        localID=None,
+        **kwargs,
     ):
         if not workflowID or not recipient or not sender or not filenames:
             raise ValueError("Missing required field")
@@ -45,7 +52,7 @@ class MeshSender:
 
 
 def event_loop(layout):
-    window = sg.Window(title="outbox", layout=layout, resizable=True)
+    window = sg.Window(title="MESH", layout=layout, resizable=True)
 
     vals = {}
     while True:
@@ -71,7 +78,7 @@ def event_loop(layout):
 
 
 def main():
-    layout = [
+    send_message = [
         [sg.Text("MESH Outbox")],
         [sg.Text("From:*\t\t"), sg.Input(key="sender", tooltip="Your Mailbox ID")],
         [
@@ -98,6 +105,18 @@ def main():
         [sg.HorizontalSeparator()],
         [sg.Button("Send", key="send")],
         [sg.Text(text_color="red", key="error_text")],
+    ]
+    inbox = [
+        [sg.Text("MESH Inbox")],
+        [sg.Table([[]], key="table")],
+    ]
+    layout = [
+        [
+            sg.TabGroup(
+                [[sg.Tab("Send Message", send_message), sg.Tab("Inbox", inbox)]],
+                key="tabs",
+            )
+        ]
     ]
     event_loop(layout=layout)
 
