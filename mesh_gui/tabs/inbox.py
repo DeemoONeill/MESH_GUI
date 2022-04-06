@@ -4,6 +4,8 @@ import xml.etree.ElementTree as ET
 import PySimpleGUI as sg
 import subprocess
 
+popup = False
+
 
 class Mesh_box:
     count = 0
@@ -16,24 +18,48 @@ class Mesh_box:
         self.boxname = boxname
         self.box_refresh = f"{boxname}_refresh"
         self.table_name = f"{boxname}table"
-        self.tab = f"{self.boxname.upper()}_TAB"
+        self.tab = f"{boxname.upper()}_TAB"
+        self.box_dir = f"{boxname}_dir"
+        self.checkbox = f"{boxname}_checkbox"
 
     def loop(self, event, values, window):
         match event:
             case self.box_refresh | "__TIMEOUT__":
-                self.update_inbox_tab(window)
+                self.update_tab(window, values)
+            case self.box_dir:
+                self.open_folder()
             case (self.table_name, "+CLICKED+", (row, column)):
                 self.open_file(row, window)
 
-    def update_inbox_tab(self, window):
+    def open_folder(self):
+        global popup
+        if not popup:
+            sg.popup(
+                "There are two types of files present:\n"
+                "A ctl file which contains the routing information, and a dat file which contains the data.\n"
+                "We recommend that you move or remove the files with the same names together.",
+                title="Info",
+            )
+            popup = True
+        subprocess.Popen(f"explorer {self.dir}")
+
+    def update_tab(self, window, values: dict):
         inbox = self.check_inbox()
         length = len(inbox)
-        if self.init and length > self.count:
-            self.notify()
+        if values.get(self.checkbox) and self.init and length > self.count:
+            self.notify(length - self.count)
         window[self.table_name].update(values=inbox)
         window[self.tab].update(f"{self.boxname.capitalize()} ({length})")
         self.count = length
         self.inbox = inbox
+        if not self.init:
+            self.init = True
+
+    def notify(self, count):
+        sg.popup_notify(
+            f"{count} New message{'s' if count>1 else ''} in {self.boxname}",
+            title=f"MESH {self.boxname}",
+        )
 
     def check_inbox(self):
         info = []
@@ -89,5 +115,10 @@ def generate_box_layout(boxname):
                 enable_click_events=True,
             )
         ],
-        [sg.B(f"refresh {boxname}", key=f"{boxname}_refresh")],
+        [
+            sg.B(f"refresh {boxname}", key=f"{boxname}_refresh"),
+            sg.Checkbox("Allow Notifications for this box?", key=f"{boxname}_checkbox"),
+            sg.Push(),
+            sg.B("Open Folder location", key=f"{boxname}_dir"),
+        ],
     ]
