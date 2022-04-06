@@ -18,9 +18,9 @@ Immediate:
 - [x] file dialog for selecting file to send
 - [x] input for workflowID, subject, localid, recipient
 - [x] inbox
-- [ ] outbox
+- [x] outbox
 - [x] send message
-- [ ] sent messages
+- [x] sent messages
 - [ ] add persistent configuration to autofill sender and MESH-DATA-HOME
 
 Future:
