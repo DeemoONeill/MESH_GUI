@@ -113,6 +113,7 @@ def generate_box_layout(boxname):
                 expand_x=True,
                 expand_y=True,
                 enable_click_events=True,
+                tooltip="Double click to open file",
             )
         ],
         [
