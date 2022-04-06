@@ -7,14 +7,24 @@ def event_loop(layout):
     window = sg.Window(title="MESH", layout=layout, resizable=True)
     file_sender = send_files.Send_Files()
     boxes = dict(
-        INBOX_TAB=inbox.Mesh_box("inbox", "test_folders/mailbox/in"),
-        OUTBOX_TAB=inbox.Mesh_box("outbox", "test_folders/mailbox/out"),
-        SENT_TAB=inbox.Mesh_box("sent", "test_folders/mailbox/sent"),
+        INBOX_TAB=inbox.Mesh_box(
+            "inbox",
+            r"C:\Users\oneil\Documents\Programming\MESH UI\test_folders\mailbox\in",
+        ),
+        OUTBOX_TAB=inbox.Mesh_box(
+            "outbox",
+            r"C:\Users\oneil\Documents\Programming\MESH UI\test_folders\mailbox\out",
+        ),
+        SENT_TAB=inbox.Mesh_box(
+            "sent",
+            r"C:\Users\oneil\Documents\Programming\MESH UI\test_folders\mailbox\sent",
+        ),
     )
+    event, values = window.read(timeout=0)
     while True:
-        event, values = window.read(timeout=10000)
         for box in boxes.values():
-            box.update_inbox_tab(window)
+            box.update_tab(window, values)
+        event, values = window.read(timeout=10000)
         window["error_text"].update("")
         match event, values:
             case sg.WIN_CLOSED, _:
@@ -54,7 +64,7 @@ def main():
                     [
                         sg.Tab(
                             "Send Message",
-                            send_files.SEND_MESSAGE_LAYOUT,
+                            send_files.generate_send_message_layout(),
                             expand_x=True,
                             expand_y=True,
                         ),
