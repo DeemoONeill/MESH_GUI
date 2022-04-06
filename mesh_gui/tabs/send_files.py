@@ -55,42 +55,56 @@ class Send_Files:
     filenames = set()
 
     def loop(self, event, values, window):
+
         match event:
             case "browse":
                 self.filenames = self.filenames | set(sg.filedialog.askopenfilenames())
-                window["filenames"].update(self.filenames)
+                window["filenames"].update(sorted(self.filenames))
+
+            case "remove":
+                self.filenames = self.filenames - set(values["filenames"])
+                window["filenames"].update(sorted(self.filenames))
+
             case "send":
                 try:
                     values["filenames"] = self.filenames
                     MeshSender(**values).send_file("test_folders/mailbox/out")
-                except:
-                    print(window.element_list())
+                    window["success_text"].update(
+                        f"{len(self.filenames)} File{'s' if len(self.filenames)>1 else ''} added to outbox"
+                    )
+                except Exception as e:
+                    print(e)
                     window["error_text"].update("Missing fields marked with an *")
 
 
 SEND_MESSAGE_LAYOUT = [
-    [sg.Text("MESH Outbox")],
-    [sg.Text("From:*\t\t"), sg.Input(key="sender", tooltip="Your Mailbox ID")],
+    [sg.T("MESH Outbox")],
+    [sg.T("From:*\t\t"), sg.Input(key="sender", tooltip="Your Mailbox ID")],
     [
-        sg.Text("To:*\t\t"),
-        sg.Input(key="recipient", tooltip="Recipients Mailbox ID"),
+        sg.T("To:*\t\t"),
+        sg.I(key="recipient", tooltip="Recipients Mailbox ID"),
     ],
     [
-        sg.Text("WorkflowID:*\t"),
-        sg.Input(key="workflowID", tooltip="The workflow ID for the data collection"),
+        sg.T("WorkflowID:*\t"),
+        sg.I(key="workflowID", tooltip="The workflow ID for the data collection"),
     ],
-    [sg.Text("Subject:\t\t"), sg.Input(key="subject", tooltip="Subject")],
-    [sg.Text("LocalID:\t\t"), sg.Input(key="localID")],
+    [sg.T("Subject:\t\t"), sg.Input(key="subject", tooltip="Subject")],
+    [sg.T("LocalID:\t\t"), sg.Input(key="localID")],
     [
-        sg.Text("Data file(s)*\t"),
-        sg.Button(
+        sg.T("Data file(s)*\t"),
+        sg.B(
             "Browse",
             tooltip="hold shift and click to select multiple files",
             key="browse",
         ),
     ],
-    [sg.Listbox(values=[], size=(60, 4), key="filenames")],
+    [
+        sg.Listbox(
+            values=[], size=(60, 4), key="filenames", expand_x=True, expand_y=True
+        )
+    ],
+    [sg.B("Remove", key="remove")],
     [sg.HorizontalSeparator()],
-    [sg.Button("Send", key="send")],
-    [sg.Text(text_color="red", key="error_text")],
+    [sg.B("Send", key="send")],
+    [sg.T(text_color="red", key="error_text"), sg.T(key="success_text")],
 ]
