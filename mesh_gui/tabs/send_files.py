@@ -77,34 +77,41 @@ class Send_Files:
                     window["error_text"].update("Missing fields marked with an *")
 
 
-SEND_MESSAGE_LAYOUT = [
-    [sg.T("MESH Outbox")],
-    [sg.T("From:*\t\t"), sg.Input(key="sender", tooltip="Your Mailbox ID")],
-    [
-        sg.T("To:*\t\t"),
-        sg.I(key="recipient", tooltip="Recipients Mailbox ID"),
-    ],
-    [
-        sg.T("WorkflowID:*\t"),
-        sg.I(key="workflowID", tooltip="The workflow ID for the data collection"),
-    ],
-    [sg.T("Subject:\t\t"), sg.Input(key="subject", tooltip="Subject")],
-    [sg.T("LocalID:\t\t"), sg.Input(key="localID")],
-    [
-        sg.T("Data file(s)*\t"),
-        sg.B(
-            "Browse",
-            tooltip="hold shift and click to select multiple files",
-            key="browse",
-        ),
-    ],
-    [
-        sg.Listbox(
-            values=[], size=(60, 4), key="filenames", expand_x=True, expand_y=True
-        )
-    ],
-    [sg.B("Remove", key="remove")],
-    [sg.HorizontalSeparator()],
-    [sg.B("Send", key="send")],
-    [sg.T(text_color="red", key="error_text"), sg.T(key="success_text")],
-]
+def generate_send_message_layout():
+    return [
+        [sg.T("Send Message")],
+        [sg.T("From:*\t\t"), sg.Input(key="sender", tooltip="Your Mailbox ID")],
+        [
+            sg.T("To:*\t\t"),
+            sg.I(key="recipient", tooltip="Recipients Mailbox ID"),
+        ],
+        [
+            sg.T("WorkflowID:*\t"),
+            sg.I(key="workflowID", tooltip="The workflow ID for the data collection"),
+        ],
+        [
+            sg.T("Subject:\t\t"),
+            sg.Input(
+                key="subject",
+                tooltip="Message Subject, see collection information for details",
+            ),
+        ],
+        [sg.T("LocalID:\t\t"), sg.Input(key="localID")],
+        [
+            sg.T("Data file(s)*\t"),
+            sg.B(
+                "Browse",
+                tooltip="hold shift and click to select multiple files",
+                key="browse",
+            ),
+        ],
+        [
+            sg.Listbox(
+                values=[], size=(60, 4), key="filenames", expand_x=True, expand_y=True
+            )
+        ],
+        [sg.B("Remove", key="remove", tooltip="Removes selected file")],
+        [sg.HorizontalSeparator()],
+        [sg.B("Send", key="send")],
+        [sg.T(text_color="red", key="error_text"), sg.T(key="success_text")],
+    ]
