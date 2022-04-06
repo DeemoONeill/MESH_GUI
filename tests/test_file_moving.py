@@ -1,4 +1,4 @@
-from mesh_gui.mesh_wrapper import MeshSender
+from mesh_gui.tabs.send_files import MeshSender
 from .fixtures import mesh_sender, set_up_test_files
 import os
 import pytest

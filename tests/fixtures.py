@@ -1,6 +1,6 @@
 import pytest
 import os
-from mesh_gui.mesh_wrapper import MeshSender
+from mesh_gui.tabs.send_files import MeshSender
 
 
 @pytest.fixture(scope="session")
