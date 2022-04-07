@@ -10,8 +10,14 @@ popup = False
 class Mesh_box:
     count = 0
     init = False
-    last_clicked = None
     inbox: list = None
+    filetypes = (
+        ("Text Files (.txt)", "*.txt"),
+        ("Web Page (.html)", "*.html"),
+        ("XML file (.xml)", "*.xml"),
+        ("JSON file (.json)", "*.json"),
+        ("Comma Separated Variables (.csv)", "*.csv"),
+    )
 
     def __init__(self, boxname: str, dir):
         self.dir = dir
@@ -28,8 +34,31 @@ class Mesh_box:
                 self.update_tab(window, values)
             case self.box_dir:
                 self.open_folder()
-            case (self.table_name, "+CLICKED+", (row, column)):
+            case self.table_name:
+                row = values.get(self.table_name)
                 self.open_file(row, window)
+            case "Save As":
+                row = values.get(self.table_name)
+                self.save_as(row)
+            case "Delete":
+                row = values.get(self.table_name)[0]
+                if row:
+                    pass
+
+    def save_as(self, row):
+        if not row:
+            return
+        filename = self.inbox[row[0]][-1]
+        file = sg.filedialog.asksaveasfile(
+            "w",
+            title="Save as",
+            filetypes=self.filetypes,
+            defaultextension="*.*",
+        )
+        if file:
+            with file as f:
+                with open(os.path.join(self.dir, filename)) as dat:
+                    f.write(dat.read())
 
     def open_folder(self):
         global popup
@@ -88,20 +117,15 @@ class Mesh_box:
 
         return info
 
-    def open_file(self, row, window: sg.Window):
-        if not self.last_clicked:
-            self.last_clicked = time.time()
-        else:
-            if (time.time() - self.last_clicked) < 0.7:
-                if row is not None and (filename := self.inbox[row][-1]):
-                    subprocess.Popen(
-                        f"notepad {os.path.join(self.dir,filename)}",
-                    )
-            else:
-                self.last_clicked = time.time()
+    def open_file(self, rows: list, window: sg.Window):
+        for r in rows:
+            if r is not None and (filename := self.inbox[r][-1]):
+                subprocess.Popen(
+                    f"notepad {os.path.join(self.dir,filename)}",
+                )
 
 
-def generate_box_layout(boxname):
+def generate_box_layout(boxname: str):
     return [
         [sg.T(f"MESH {boxname}")],
         [
@@ -112,13 +136,18 @@ def generate_box_layout(boxname):
                 auto_size_columns=True,
                 expand_x=True,
                 expand_y=True,
-                enable_click_events=True,
+                bind_return_key=True,
                 tooltip="Double click to open file",
+                right_click_menu=[
+                    "&Right",
+                    ["Save As", "Delete"],
+                ],
+                right_click_selects=True,
             )
         ],
         [
-            sg.B(f"refresh {boxname}", key=f"{boxname}_refresh"),
-            sg.Checkbox("Allow Notifications for this box?", key=f"{boxname}_checkbox"),
+            sg.B(f"Refresh", key=f"{boxname}_refresh"),
+            sg.Checkbox("Allow Notifications?", key=f"{boxname}_checkbox"),
             sg.Push(),
             sg.B("Open Folder location", key=f"{boxname}_dir"),
         ],
