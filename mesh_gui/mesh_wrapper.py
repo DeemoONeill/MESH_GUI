@@ -1,10 +1,19 @@
 import PySimpleGUI as sg
 import tabs.send_files as send_files
 import tabs.inbox as inbox
+import os
+
+here = os.path.split(__file__)[0]
 
 
 def event_loop(layout):
-    window = sg.Window(title="MESH", layout=layout, resizable=True)
+    window = sg.Window(
+        title="MESH Client GUI",
+        layout=layout,
+        resizable=True,
+        scaling=1.5,
+        font="normal 11",
+    )
     file_sender = send_files.Send_Files()
     boxes = dict(
         INBOX_TAB=inbox.Mesh_box(
@@ -79,6 +88,7 @@ def main():
                 size=(1000, 700),
             ),
         ],
+        [sg.VPush()],
     ]
     event_loop(layout=layout)
 
