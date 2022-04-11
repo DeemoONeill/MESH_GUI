@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import tabs.send_files as send_files
 import tabs.inbox as inbox
+import tabs.settings_tab as settings
 import os
 
 here = os.path.split(__file__)[0]
@@ -15,6 +16,7 @@ def event_loop(layout):
         font="normal 11",
     )
     file_sender = send_files.Send_Files()
+    settings_ = settings.Settings()
     boxes = dict(
         INBOX_TAB=inbox.Mesh_box(
             "inbox",
@@ -42,7 +44,10 @@ def event_loop(layout):
             case _, {"-tabs-": "Send Message"}:
                 file_sender.loop(event=event, values=values, window=window)
 
-            case _, {"-tabs-": tabname}:
+            case _, {"-tabs-": "Settings"}:
+                settings_.loop(event, values, window)
+
+            case _, {"-tabs-": tabname} if tabname in boxes:
                 boxes[tabname].loop(event, values, window)
 
             case "__TIMEOUT__", _:
@@ -78,6 +83,12 @@ def main():
                             expand_y=True,
                         ),
                         *generate_boxes(),
+                        sg.Tab(
+                            "Settings",
+                            settings.Settings.generate_settings_layout(),
+                            expand_x=True,
+                            expand_y=True,
+                        ),
                     ]
                 ],
                 key="-tabs-",
