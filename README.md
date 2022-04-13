@@ -21,7 +21,7 @@ Immediate:
 - [x] outbox
 - [x] send message
 - [x] sent messages
-- [ ] add persistent configuration to autofill sender and MESH-DATA-HOME
+- [x] add persistent configuration to autofill sender and MESH-DATA-HOME
 - [x] add rightclick menu with a "save as" and "delete" function
 
 Future:
