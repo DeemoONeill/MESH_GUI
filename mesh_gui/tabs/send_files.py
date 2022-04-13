@@ -15,7 +15,7 @@ class MeshSender:
         **kwargs,
     ):
         if not workflowID or not recipient or not sender or not filenames:
-            raise ValueError("Missing required field")
+            raise ValueError("Missing fields marked with *")
         self.workflowID = workflowID
         self.recipient = recipient
         self.sender = sender
@@ -68,13 +68,14 @@ class Send_Files:
             case "send":
                 try:
                     values["filenames"] = self.filenames
-                    MeshSender(**values).send_file("test_folders/mailbox/out")
+                    sent = MeshSender(**values).send_file("test_folders/mailbox/out")
                     window["success_text"].update(
                         f"{len(self.filenames)} File{'s' if len(self.filenames)>1 else ''} added to outbox"
                     )
+                    window["filenames"].update([])
+                    self.filenames = set()
                 except Exception as e:
-                    print(e)
-                    window["error_text"].update("Missing fields marked with an *")
+                    window["error_text"].update(e)
 
 
 def generate_send_message_layout():
