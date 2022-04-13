@@ -15,23 +15,16 @@ def event_loop(layout):
         scaling=1.5,
         font="normal 11",
     )
-    file_sender = send_files.Send_Files()
-    settings_ = settings.Settings()
-    boxes = dict(
-        INBOX_TAB=inbox.Mesh_box(
-            "inbox",
-            r"C:\Users\oneil\Documents\Programming\MESH UI\test_folders\mailbox\in",
-        ),
-        OUTBOX_TAB=inbox.Mesh_box(
-            "outbox",
-            r"C:\Users\oneil\Documents\Programming\MESH UI\test_folders\mailbox\out",
-        ),
-        SENT_TAB=inbox.Mesh_box(
-            "sent",
-            r"C:\Users\oneil\Documents\Programming\MESH UI\test_folders\mailbox\sent",
-        ),
-    )
     event, values = window.read(timeout=0)
+    file_sender = send_files.Send_Files()
+    settings_ = settings.Settings(window)
+    mb_root = settings_.mb_root
+    boxes = dict(
+        INBOX_TAB=inbox.Mesh_box("inbox", "in", mb_root),
+        OUTBOX_TAB=inbox.Mesh_box("outbox", "out", mb_root),
+        SENT_TAB=inbox.Mesh_box("sent", "sent", mb_root),
+    )
+    settings_.boxes = boxes
     while True:
         for box in boxes.values():
             box.update_tab(window, values)
@@ -41,6 +34,11 @@ def event_loop(layout):
             case sg.WIN_CLOSED, _:
                 break
 
+            case "__TIMEOUT__", _:
+                for box in boxes.values():
+                    box.loop(event, values, window)
+                settings_.loop(event, values, window)
+
             case _, {"-tabs-": "Send Message"}:
                 file_sender.loop(event=event, values=values, window=window)
 
@@ -49,10 +47,6 @@ def event_loop(layout):
 
             case _, {"-tabs-": tabname} if tabname in boxes:
                 boxes[tabname].loop(event, values, window)
-
-            case "__TIMEOUT__", _:
-                for box in boxes.values():
-                    box.loop(event, values, window)
 
         print(event, values)
     window.close()
