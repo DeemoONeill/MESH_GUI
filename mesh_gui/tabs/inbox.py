@@ -18,9 +18,14 @@ class Mesh_box:
         ("JSON file (.json)", "*.json"),
         ("Comma Separated Variables (.csv)", "*.csv"),
     )
+    dir = None
+    path = None
 
-    def __init__(self, boxname: str, dir):
+    def __init__(self, boxname: str, folder, dir=None):
+        self.folder = folder
         self.dir = dir
+        if self.dir and self.folder:
+            self.path = os.path.join(dir, folder)
         self.boxname = boxname
         self.box_refresh = f"{boxname}_refresh"
         self.table_name = f"{boxname}table"
@@ -57,7 +62,7 @@ class Mesh_box:
         )
         if file:
             with file as f:
-                with open(os.path.join(self.dir, filename)) as dat:
+                with open(os.path.join(self.folder, filename)) as dat:
                     f.write(dat.read())
 
     def open_folder(self):
@@ -70,9 +75,10 @@ class Mesh_box:
                 title="Info",
             )
             popup = True
-        subprocess.Popen(f"explorer {self.dir}")
+        subprocess.Popen(f"explorer {os.path.normpath(self.path)}")
 
     def update_tab(self, window, values: dict):
+
         inbox = self.check_inbox()
         length = len(inbox)
         if values.get(self.checkbox) and self.init and length > self.count:
@@ -92,12 +98,16 @@ class Mesh_box:
 
     def check_inbox(self):
         info = []
-        files = os.listdir(self.dir)
+        if not self.path and self.dir:
+            self.path = os.path.join(self.dir, self.folder)
+        elif not self.dir:
+            return info
+        files = os.listdir(self.path)
         unique_files = {os.path.splitext(file)[0] for file in files}
         for file in unique_files:
             file_info = []
             try:
-                with open(os.path.join(self.dir, f"{file}.ctl")) as f:
+                with open(os.path.join(self.path, f"{file}.ctl")) as f:
                     root = ET.parse(f).getroot()
                     for value in [
                         "From_DTS",
@@ -121,7 +131,7 @@ class Mesh_box:
         for r in rows:
             if r is not None and (filename := self.inbox[r][-1]):
                 subprocess.Popen(
-                    f"notepad {os.path.join(self.dir,filename)}",
+                    f"notepad {os.path.join(self.folder,filename)}",
                 )
 
 
