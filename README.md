@@ -2,7 +2,7 @@
 
 A GUI wrapper for the MESH (Messaging in Social and Healthcare) client
 
-![send_message](images/screenshot_send_message.png) ![inbox](images/screenshot_inbox.png) ![Notifications](images/screenshot_notification.png)
+![send_message](images/screenshot.png) ![inbox](images/screenshot_inbox.png) ![Notifications](images/screenshot_notification.png)
 ![Settings](images/settings.png)
 
 This GUI seeks to solve the following problems.
