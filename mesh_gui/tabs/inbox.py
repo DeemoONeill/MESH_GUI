@@ -131,7 +131,7 @@ class Mesh_box:
         for r in rows:
             if r is not None and (filename := self.inbox[r][-1]):
                 subprocess.Popen(
-                    f"notepad {os.path.join(self.folder,filename)}",
+                    f"notepad {os.path.join(self.path,filename)}",
                 )
 
 
