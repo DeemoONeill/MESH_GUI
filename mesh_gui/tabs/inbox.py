@@ -18,7 +18,6 @@ class Mesh_box:
         ("JSON file (.json)", "*.json"),
         ("Comma Separated Variables (.csv)", "*.csv"),
     )
-    dir = None
     path = None
 
     def __init__(self, boxname: str, folder, dir=None):
@@ -102,7 +101,10 @@ class Mesh_box:
             self.path = os.path.join(self.dir, self.folder)
         elif not self.dir:
             return info
-        files = os.listdir(self.path)
+        try:
+            files = os.listdir(self.path)
+        except FileNotFoundError:
+            return info
         unique_files = {os.path.splitext(file)[0] for file in files}
         for file in unique_files:
             file_info = []
@@ -126,6 +128,16 @@ class Mesh_box:
             info.append(file_info)
 
         return info
+
+    @property
+    def dir(self):
+        return self.path
+
+    @dir.setter
+    def dir(self, directory):
+        if directory:
+            path = os.path.join(directory, self.folder)
+            self.path = os.path.normpath(path)
 
     def open_file(self, rows: list, window: sg.Window):
         for r in rows:

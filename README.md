@@ -3,6 +3,7 @@
 A GUI wrapper for the MESH (Messaging in Social and Healthcare) client
 
 ![send_message](images/screenshot_send_message.png) ![inbox](images/screenshot_inbox.png) ![Notifications](images/screenshot_notification.png)
+![Settings](images/settings.png)
 
 This GUI seeks to solve the following problems.
 
@@ -22,7 +23,8 @@ Immediate:
 - [x] send message
 - [x] sent messages
 - [x] add persistent configuration to autofill sender and MESH-DATA-HOME
-- [x] add rightclick menu with a "save as" and "delete" function
+- [x] add rightclick menu with a "save as" function
+- [ ] add rightclicl "delete" function
 
 Future:
 

@@ -10,11 +10,30 @@ class Settings:
     folder = ".MESHGUI"
     settings_path = os.path.join(location, folder)
     filename = "mesh_gui_settings.json"
-    mailbox_root = None
-    mailbox_id = None
+    __mailbox_root = None
+    __mailbox_id = None
 
-    def __init__(self, window, boxes=None) -> None:
-        self.boxes = boxes
+    @property
+    def mailbox_root(self):
+        return self.__mailbox_root
+
+    @mailbox_root.setter
+    def mailbox_root(self, directory):
+        self.__mailbox_root = directory
+        self.main_window.mailbox_root = directory
+
+    @property
+    def mailbox_id(self):
+        return self.__mailbox_id
+
+    @mailbox_id.setter
+    def mailbox_id(self, mailbox_id):
+        self.__mailbox_id = mailbox_id
+        self.window["sender"].update(self.mailbox_id)
+
+    def __init__(self, window, main_window) -> None:
+        self.main_window = main_window
+        self.window = window
         self.load(window)
 
     def loop(self, event, values, window):
@@ -59,12 +78,6 @@ class Settings:
     def save(self, values, window):
         self.mailbox_root = values.get("mailbox_root")
         self.mailbox_id = values.get("Mailbox_ID")
-        window["sender"].update(self.mailbox_id)
-        for box in self.boxes.values():
-            if box.dir:
-                break
-            else:
-                box.dir = self.mailbox_root
         os.makedirs(self.settings_path, exist_ok=True)
         with open(os.path.join(self.settings_path, self.filename), "w") as f:
             json.dump(values, f, default=str)

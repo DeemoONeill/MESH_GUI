@@ -68,7 +68,7 @@ class Send_Files:
             case "send":
                 try:
                     values["filenames"] = self.filenames
-                    sent = MeshSender(**values).send_file("test_folders/mailbox/out")
+                    sent = MeshSender(**values).send_file(self.dir)
                     window["success_text"].update(
                         f"{len(self.filenames)} File{'s' if len(self.filenames)>1 else ''} added to outbox"
                     )
@@ -77,11 +77,29 @@ class Send_Files:
                 except Exception as e:
                     window["error_text"].update(e)
 
+    @property
+    def dir(self):
+        return self.__dir
+
+    @dir.setter
+    def dir(self, directory):
+        print(directory)
+        dir = os.path.join(directory, "out/")
+        self.__dir = os.path.normpath(dir)
+
 
 def generate_send_message_layout():
     return [
         [sg.T("Send Message")],
-        [sg.T("From:*\t\t"), sg.Input(key="sender", tooltip="Your Mailbox ID")],
+        [
+            sg.T("From:*\t\t"),
+            sg.Input(
+                key="sender",
+                tooltip="Your Mailbox ID",
+                readonly=True,
+                disabled_readonly_background_color="light grey",
+            ),
+        ],
         [
             sg.T("To:*\t\t"),
             sg.I(key="recipient", tooltip="Recipients Mailbox ID"),
