@@ -61,7 +61,7 @@ class Mesh_box:
         )
         if file:
             with file as f:
-                with open(os.path.join(self.folder, filename)) as dat:
+                with open(os.path.join(self.path, filename)) as dat:
                     f.write(dat.read())
 
     def open_folder(self):
