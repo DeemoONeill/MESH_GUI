@@ -24,7 +24,7 @@ Immediate:
 - [x] sent messages
 - [x] add persistent configuration to autofill sender and MESH-DATA-HOME
 - [x] add rightclick menu with a "save as" function
-- [ ] add rightclicl "delete" function
+- [x] add rightclick "delete" function
 
 Future:
 
