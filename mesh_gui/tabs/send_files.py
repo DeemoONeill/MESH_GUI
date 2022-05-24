@@ -98,6 +98,7 @@ def generate_send_message_layout():
                 tooltip="Your Mailbox ID",
                 readonly=True,
                 disabled_readonly_background_color="light grey",
+                focus=False,
             ),
         ],
         [
