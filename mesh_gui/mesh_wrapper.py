@@ -31,7 +31,9 @@ class main_window:
             for box in self.boxes.values():
                 box.update_tab(window, values)
             event, values = window.read(timeout=10000)
-            window["error_text"].update("")
+            if e := window["error_text"]:
+                e.update("")
+
             match event, values:
                 case sg.WIN_CLOSED, _:
                     break
