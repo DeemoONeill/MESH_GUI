@@ -1,5 +1,5 @@
 import os
-import time
+import datetime
 import xml.etree.ElementTree as ET
 import PySimpleGUI as sg
 import subprocess
@@ -19,6 +19,8 @@ class Mesh_box:
         ("Comma Separated Variables (.csv)", "*.csv"),
     )
     path = None
+    sorted_on = None
+    reverse = False
 
     def __init__(self, boxname: str, folder, dir=None):
         self.folder = folder
@@ -33,26 +35,26 @@ class Mesh_box:
         self.checkbox = f"{boxname}_checkbox"
 
     def loop(self, event, values, window):
-        match event:
-            case self.box_refresh | "__TIMEOUT__":
+        match event, values:
+            case self.box_refresh | "__TIMEOUT__", _:
                 self.update_tab(window, values)
-            case self.box_dir:
+            case self.box_dir, _:
                 self.open_folder()
-            case self.table_name:
-                row = values.get(self.table_name)
+            case self.table_name, {self.table_name: [row]} if row is not None:
                 self.open_file(row, window)
-            case "Save As":
-                row = values.get(self.table_name)
+            case self.table_name, {self.table_name: row} if not row:
+                self.sort(self.sorted_on, window)
+            case (self.table_name, "+CLICKED+", (row, column)), _ if row == -1:
+                self.sort(column, window)
+            case "Save As", {self.table_name: row} if row:
                 self.save_as(row)
-            case "Delete":
-                row = values.get(self.table_name)[0]
-                if row:
-                    pass
+            case "Delete", {self.table_name: rows} if rows:
+                self.delete(rows, window, values)
 
     def save_as(self, row):
         if not row:
             return
-        filename = self.inbox[row[0]][-1]
+        filename = self.inbox[row[0]][-2]
         file = sg.filedialog.asksaveasfile(
             "w",
             title="Save as",
@@ -61,7 +63,7 @@ class Mesh_box:
         )
         if file:
             with file as f:
-                with open(os.path.join(self.folder, filename)) as dat:
+                with open(os.path.join(self.dir, filename)) as dat:
                     f.write(dat.read())
 
     def open_folder(self):
@@ -77,17 +79,22 @@ class Mesh_box:
         subprocess.Popen(f"explorer {os.path.normpath(self.path)}")
 
     def update_tab(self, window, values: dict):
-
         inbox = self.check_inbox()
         length = len(inbox)
         if values.get(self.checkbox) and self.init and length > self.count:
             self.notify(length - self.count)
+            self.__update(window, inbox, length)
+        elif self.init and length < self.count:
+            self.__update(window, inbox, length)
+        if not self.init:
+            self.__update(window, inbox, length)
+            self.init = True
+
+    def __update(self, window, inbox, length):
         window[self.table_name].update(values=inbox)
         window[self.tab].update(f"{self.boxname.capitalize()} ({length})")
         self.count = length
         self.inbox = inbox
-        if not self.init:
-            self.init = True
 
     def notify(self, count):
         sg.popup_notify(
@@ -110,23 +117,37 @@ class Mesh_box:
             file_info = []
             try:
                 with open(os.path.join(self.path, f"{file}.ctl")) as f:
-                    root = ET.parse(f).getroot()
-                    for value in [
+                    root = ET.parse(f).getroot().iter()
+                    keys = [
+                        "DateTime",
                         "From_DTS",
                         "To_DTS",
                         "Subject",
                         "WorkflowId",
                         "LocalId",
-                    ]:
-                        file_info.append(root.find(value).text)
+                    ]
+                    temp_dict = {}
+                    for element in root:
+                        if (key := element.tag) in keys:
+                            text = str(element.text)
+                            if key != "DateTime":
+                                temp_dict[key] = text
+                            elif text:
+                                temp_dict[key] = datetime.datetime.strptime(
+                                    text, "%Y%m%d%H%M%S"
+                                )
+                    for key in keys:
+                        file_info.append(str(temp_dict.get(key)))
+                if (filename := f"{file}.dat") in files:
+                    file_info.append(filename)
+                else:
+                    file_info.append("None")
+                file_info.append(f"{file}.ctl")
             except FileNotFoundError:
                 pass
-            if (filename := f"{file}.dat") in files:
-                file_info.append(filename)
-            else:
-                file_info.append(None)
             info.append(file_info)
-
+        if not self.sorted_on:
+            info = sorted(info)
         return info
 
     @property
@@ -139,12 +160,54 @@ class Mesh_box:
             path = os.path.join(directory, self.folder)
             self.path = os.path.normpath(path)
 
-    def open_file(self, rows: list, window: sg.Window):
-        for r in rows:
-            if r is not None and (filename := self.inbox[r][-1]):
-                subprocess.Popen(
-                    f"notepad {os.path.join(self.path,filename)}",
-                )
+    def open_file(self, row: int, window: sg.Window):
+        if row is not None and (filename := self.inbox[row][-2]) != "None":
+            subprocess.Popen(
+                f"notepad {os.path.join(self.path,filename)}",
+            )
+
+    def delete(self, rows, window, values):
+        if self.delete_prompt(len(rows)):
+            for row in rows:
+                try:
+                    current = self.inbox[row]
+                    files = current[-2], current[-1]
+                    for file in files:
+                        if file == "None":
+                            continue
+                        try:
+                            os.remove(os.path.join(self.path, file))
+                        except FileNotFoundError:
+                            continue
+                except PermissionError:
+                    sg.popup_notify("I don't have permission to remove these files")
+            self.update_tab(window, values)
+
+    def delete_prompt(self, num):
+        choice, _ = sg.Window(
+            "Continue?",
+            [
+                [
+                    sg.T(
+                        f"Are you sure you want to delete {num} file{'s' if num>1 else ''}"
+                    )
+                ],
+                [sg.Yes(s=10), sg.No(s=10)],
+            ],
+            disable_close=True,
+        ).read(close=True)
+        return choice == "Yes"
+
+    def sort(self, column, window):
+        if self.sorted_on == column:
+            self.reverse = not self.reverse
+        else:
+            self.reverse = False
+            self.sorted_on = column
+
+        self.inbox = sorted(self.inbox, key=lambda x: x[column], reverse=self.reverse)
+        self.sorted_on = column
+        self.__update(window, self.inbox, len(self.inbox))
 
 
 def generate_box_layout(boxname: str):
@@ -153,7 +216,15 @@ def generate_box_layout(boxname: str):
         [
             sg.Table(
                 [[]],
-                headings=["From", "To", "Subject", "WorkflowID", "LocalID", "Filename"],
+                headings=[
+                    "Time",
+                    "From",
+                    "To",
+                    "Subject",
+                    "WorkflowID",
+                    "LocalID",
+                    "Filename",
+                ],
                 key=f"{boxname}table",
                 auto_size_columns=True,
                 expand_x=True,
@@ -164,7 +235,8 @@ def generate_box_layout(boxname: str):
                     "&Right",
                     ["Save As", "Delete"],
                 ],
-                right_click_selects=True,
+                # right_click_selects=True,
+                enable_click_events=True,
             )
         ],
         [
