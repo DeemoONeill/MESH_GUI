@@ -81,8 +81,9 @@ class Mesh_box:
     def update_tab(self, window, values: dict):
         inbox = self.check_inbox()
         length = len(inbox)
-        if values.get(self.checkbox) and self.init and length > self.count:
-            self.notify(length - self.count)
+        if self.init and length > self.count:
+            if values.get(self.checkbox):
+                self.notify(length - self.count)
             self.__update(window, inbox, length)
         elif self.init and length < self.count:
             self.__update(window, inbox, length)
@@ -112,7 +113,7 @@ class Mesh_box:
             files = os.listdir(self.path)
         except FileNotFoundError:
             return info
-        unique_files = {os.path.splitext(file)[0] for file in files}
+        unique_files = {os.path.splitext(file)[0] for file in files if os.path.splitext(file)[1].lower() in ".ctl"}
         for file in unique_files:
             file_info = []
             try:
